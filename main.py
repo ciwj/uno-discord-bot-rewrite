@@ -1,8 +1,8 @@
 import os
+import random
 
 from dotenv import load_dotenv
 from discord.ext import commands
-import random
 from datetime import datetime
 
 load_dotenv()
@@ -11,6 +11,7 @@ GUILD = os.getenv('DISCORD_GUILD')
 
 description = "This bot has become my living hell"
 prefix = '!'
+
 
 class Error(Exception):
     """Base Error Class"""
@@ -29,6 +30,7 @@ class alreadyInLobbyError(Error):
 
 class Player:
     """Represents each player currently in the game."""
+
     def __init__(self, playerName, playerID, roleID, ctx):
         self.playerName = playerName
         self.playerID = playerID
@@ -41,7 +43,6 @@ class Player:
 
     def drawCard(self, deck):
         self.hand.append(deck.drawFromDeck())
-        pass
 
 
 channels = [
@@ -50,10 +51,10 @@ channels = [
 ]
 
 
-
 class Card():
     """Creates the card class, defines as value + colour. also a little thing for printing cards
        (as in print the deck:for every card in deck card.print)"""
+
     def __init__(self, value, colour):
         self.value = value
         self.colour = colour
@@ -84,6 +85,7 @@ class Deck():
             print(card)
 
     def shuffleDeck(self):
+        random.seed(datetime.now())
         self.shuffledCards = random.shuffle(self.deckList)
 
     def drawFromDeck(self):
@@ -93,10 +95,9 @@ class Deck():
 
 class Game:
     def __init__(self):
-        self.inLobby = True # Assuming Game object is created by the lobby command
+        self.inLobby = True  # Assuming Game object is created by the lobby command
         self.inGame = False
         self.isReverse = False
-
 
 
 # cards = [
@@ -143,13 +144,22 @@ class Game:
 bot = commands.Bot(command_prefix=prefix, description=description, case_insensitive=True)
 
 
-
 @bot.command(pass_context=True)
 async def lobby(ctx):
     try:
-        pass
+        global mainChannel, game
+        game = Game()
+        mainChannel = bot.get_channel(709900240919986250)
+        sender = ctx.message.author.mention
+        await mainChannel.send(".here, " + sender + " is trying to start a game!")
 
     except Exception as e:
         print(e)
+
+
+@bot.event
+async def on_ready():
+    print("-------------\nLogged in as {0.user}\n-------------\n".format(bot))
+
 
 bot.run(TOKEN)
