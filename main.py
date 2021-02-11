@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from discord.ext import commands
-from random import randrange, choice, seed
+import random
 from datetime import datetime
 
 load_dotenv()
@@ -11,6 +11,7 @@ GUILD = os.getenv('DISCORD_GUILD')
 
 description = "This bot has become my living hell"
 prefix = '!'
+
 
 class Error(Exception):
     """Base Error Class"""
@@ -27,8 +28,21 @@ class alreadyInLobbyError(Error):
         return self.message
 
 
+class Card():
+    """Creates the card class, defines as value + colour. also a little thing for printing cards
+       (as in print the deck:for every card in deck card.print)"""
+
+    def __init__(self, value, colour):
+        self.value = value
+        self.colour = colour
+
+    def __str__(self):
+        return (str(self.colour) + str(self.value))  # prints as "blue 2"
+
+
 class Player:
     """Represents each player currently in the game."""
+
     def __init__(self, playerName, playerID, roleID, ctx):
         self.playerName = playerName
         self.playerID = playerID
@@ -39,26 +53,8 @@ class Player:
         async def setMember(self, ctx):
             self.member = await commands.MemberConverter().convert(str(ctx, self.playerID))
 
-    def drawCard(self):
+    def drawCard(self) -> Card:
         pass
-
-
-channels = [
-    712763747315220561, 712763764922908794, 712763848133836870, 712763863384457256, 712763878643073065,
-    712763898356564048, 712763914747904091, 712763929020858438, 712763945525575700, 712763957852504197
-]
-
-
-
-class Card():
-    """Creates the card class, defines as value + colour. also a little thing for printing cards
-       (as in print the deck:for every card in deck card.print)"""
-    def __init__(self, value, colour):
-        self.value = value
-        self.colour = colour
-
-    def __str__(self):
-        return str(self.colour) + str(self.value))  # prints as "blue 2"
 
 
 class Deck():
@@ -72,7 +68,7 @@ class Deck():
     def constructDeck(self):
         for i in ['Red', 'Green', 'Yellow', 'Blue']:
             for j in [1, 2, 3, 4, 5, 6, 7, 8, 9, 'Draw 2', 'Reverse', 'Skip']:
-                self.deckList.append(card(j, i))
+                self.deckList.append(Card(j, i))
 
     def showPlayingPile(self):
         for card in self.playingPile:
@@ -85,6 +81,11 @@ class Deck():
     def shuffleDeck(self):
         self.shuffledCards = random.shuffle(self.deckList)
 
+
+channels = [
+    712763747315220561, 712763764922908794, 712763848133836870, 712763863384457256, 712763878643073065,
+    712763898356564048, 712763914747904091, 712763929020858438, 712763945525575700, 712763957852504197
+]
 
 # cards = [
 #    ['Red 0', 0, 0], ['Red 1', 0, 1], ['Red 1', 0, 1], ['Red 2', 0, 2], ['Red 2', 0, 2], ['Red 3', 0, 3],
@@ -130,7 +131,6 @@ class Deck():
 bot = commands.Bot(command_prefix=prefix, description=description, case_insensitive=True)
 
 
-
 @bot.command(pass_context=True)
 async def lobby(ctx):
     try:
@@ -138,5 +138,6 @@ async def lobby(ctx):
 
     except Exception as e:
         print(e)
+
 
 bot.run(TOKEN)
