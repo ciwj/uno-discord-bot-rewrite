@@ -46,7 +46,7 @@ class Player:
     def __init__(self, playerName, playerID, roleID, ctx):
         self.playerName = playerName
         self.playerID = playerID
-        self.deck = []
+        self.hand = []
         self.roleID = roleID
         self.setMember(ctx)
 
@@ -80,6 +80,13 @@ class Deck():
 
     def shuffleDeck(self):
         self.shuffledCards = random.shuffle(self.deckList)
+
+
+class Game:
+    def __init__(self):
+        self.inLobby = True
+        self.inGame = False
+        self.isReverse = False
 
 
 channels = [
