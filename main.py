@@ -28,7 +28,7 @@ class alreadyInLobbyError(Error):
 
 
 class Player:
-    """put shit here"""
+    """Represents each player currently in the game."""
     def __init__(self, playerName, playerID, roleID, ctx):
         self.playerName = playerName
         self.playerID = playerID
@@ -40,7 +40,7 @@ class Player:
             self.member = await commands.MemberConverter().convert(str(ctx, self.playerID))
 
     def drawCard(self):
-        self.deck.append(randCard())
+        pass
 
 
 channels = [
@@ -57,8 +57,8 @@ class Card():
         self.value = value
         self.colour = colour
 
-    def print(self):
-        print(str(self.colour) + str(self.value))  # prints as "blue 2"
+    def __str__(self):
+        return str(self.colour) + str(self.value))  # prints as "blue 2"
 
 
 class Deck():
@@ -67,7 +67,7 @@ class Deck():
 
     def __init__(self):
         self.constructDeck()
-        self.playingPile() = []
+        self.playingPile = []
 
     def constructDeck(self):
         for i in ['Red', 'Green', 'Yellow', 'Blue']:
@@ -130,11 +130,6 @@ class Deck():
 bot = commands.Bot(command_prefix=prefix, description=description, case_insensitive=True)
 
 
-def randCard():
-    seed(datetime.now)
-    card = choice(cards)
-    return card
-
 
 @bot.command(pass_context=True)
 async def lobby(ctx):
@@ -144,3 +139,4 @@ async def lobby(ctx):
     except Exception as e:
         print(e)
 
+bot.run(TOKEN)
