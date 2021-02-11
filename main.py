@@ -76,11 +76,11 @@ class Deck():
 
     def showPlayingPile(self):
         for card in self.playingPile:
-            card.print()
+            print(card)
 
     def showDeck(self):
         for card in self.deckList:
-            card.print()
+            print(card)
 
     def shuffleDeck(self):
         self.shuffledCards = random.shuffle(self.deckList)
