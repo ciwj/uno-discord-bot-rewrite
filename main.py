@@ -25,20 +25,27 @@ class alreadyInLobbyError(Error):
         return self.message
 
 class Player:
-    async def __init__(self, playerName, playerID, roleID):
+    def __init__(self, playerName, playerID, roleID, ctx):
         self.playerName = playerName
         self.playerID = playerID
         self.deck = []
         self.roleID = roleID
-        self.member = await commands.MemberConverter().convert(str(ctx, playerID))
+        self.setMember(ctx)
 
     def drawCard(self):
         self.deck.append(randCard())
+
+    async def setMember(self, ctx):
+        self.member = await commands.MemberConverter().convert(str(ctx, self.playerID))
+
 
 class Card:
     def __init__(self, colour, number):
         self.colour = colour
         self.number = number
+
+         
+
 
 class Game:
     def __init__(self):
