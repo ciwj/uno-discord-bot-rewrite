@@ -25,7 +25,7 @@ class alreadyInLobbyError(Error):
         return self.message
 
 class Player:
-    def __init__(self, playerName, playerID, roleID):
+    async def __init__(self, playerName, playerID, roleID):
         self.playerName = playerName
         self.playerID = playerID
         self.deck = []
