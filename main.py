@@ -39,7 +39,8 @@ class Player:
         async def setMember(self, ctx):
             self.member = await commands.MemberConverter().convert(str(ctx, self.playerID))
 
-    def drawCard(self):
+    def drawCard(self, deck):
+        self.hand.append(deck.drawFromDeck())
         pass
 
 
@@ -84,6 +85,10 @@ class Deck():
 
     def shuffleDeck(self):
         self.shuffledCards = random.shuffle(self.deckList)
+
+    def drawFromDeck(self):
+        self.draw = self.deckList.pop()
+        return self.draw
 
 
 # cards = [
