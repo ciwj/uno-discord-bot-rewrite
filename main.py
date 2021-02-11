@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from discord.ext import commands
-from random import randrange, choice, seed
+import random
 from datetime import datetime
 
 load_dotenv()
@@ -32,7 +32,7 @@ class Player:
     def __init__(self, playerName, playerID, roleID, ctx):
         self.playerName = playerName
         self.playerID = playerID
-        self.deck = []
+        self.hand = []
         self.roleID = roleID
         self.setMember(ctx)
 
@@ -59,7 +59,7 @@ class Card():
         self.colour = colour
 
     def __str__(self):
-        return str(self.colour) + str(self.value))  # prints as "blue 2"
+        return str((self.colour) + str(self.value))  # prints as "blue 2"
 
 
 class Deck():
@@ -73,7 +73,7 @@ class Deck():
     def constructDeck(self):
         for i in ['Red', 'Green', 'Yellow', 'Blue']:
             for j in [1, 2, 3, 4, 5, 6, 7, 8, 9, 'Draw 2', 'Reverse', 'Skip']:
-                self.deckList.append(card(j, i))
+                self.deckList.append(Card(j, i))
 
     def showPlayingPile(self):
         for card in self.playingPile:
@@ -89,6 +89,14 @@ class Deck():
     def drawFromDeck(self):
         self.draw = self.deckList.pop()
         return self.draw
+
+
+class Game:
+    def __init__(self):
+        self.inLobby = True # Assuming Game object is created by the lobby command
+        self.inGame = False
+        self.isReverse = False
+
 
 
 # cards = [
