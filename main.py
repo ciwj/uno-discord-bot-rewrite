@@ -1,16 +1,13 @@
-import os
-
 from discord.utils import get
 from discord.ext import commands
-from dotenv import load_dotenv
 from gameclasses import *
-
 from errors import *
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
-mainChannelID = os.getenv('TEST_CHANNEL_ID')
+mainChannelID = int(os.getenv('TEST_CHANNEL_ID'))
+
 
 description = "This bot has become my living hell"
 prefix = '!'

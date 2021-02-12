@@ -1,3 +1,8 @@
+import main
+
+mainChannel = main.mainChannel
+
+
 class Error(Exception):
     """Base Error Class"""
     pass
@@ -7,6 +12,12 @@ class alreadyInLobbyError(Error):
     """Raised when a player tries to start a second lobby"""
 
     def __init__(self, playerID, playerUsername):
+        """
+
+        Returns
+        -------
+        object
+        """
         self.message = "User {0} - {1} tried creating an extra lobby.".format(playerID, playerUsername)
 
     @staticmethod

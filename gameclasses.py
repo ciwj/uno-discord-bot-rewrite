@@ -1,5 +1,7 @@
-import random
-from datetime import datetime
+import main
+
+mainChannel = main.mainChannel
+
 
 class Player:
     """Represents each player currently in the game."""
