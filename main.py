@@ -59,8 +59,11 @@ class Card():
         self.value = value
         self.colour = colour
 
-    def __str__(self):
-        return str((self.colour) + str(self.value))  # prints as "blue 2"
+    def __str__(self) -> str:
+        if (self.colour != 'Void'):
+            return str((self.colour) + str(self.value))  # prints as "blue 2"
+        else:
+            return str(self.value)
 
 
 class Deck():
@@ -72,9 +75,16 @@ class Deck():
         self.playingPile = []
 
     def constructDeck(self):
+        """Constructs a deck from scratch
+        Uno decks have two sets of every standard card except for 0s, which have one"""
         for i in ['Red', 'Green', 'Yellow', 'Blue']:
-            for j in [1, 2, 3, 4, 5, 6, 7, 8, 9, 'Draw 2', 'Reverse', 'Skip']:
+            for j in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'Draw 2', 'Reverse', 'Skip']:
                 self.deckList.append(Card(j, i))
+                if(j != '0'):
+                    self.deckList.append(Card(j, i))
+        for j in ['Wild Card', 'Wild Draw 4']:
+            for i in range(4):
+                self.deckList.append(Card(j, 'Void'))
 
     def showPlayingPile(self):
         for card in self.playingPile:
