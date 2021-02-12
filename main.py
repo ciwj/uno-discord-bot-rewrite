@@ -70,14 +70,28 @@ class alreadyInLobbyError(Error):
         return self.message
 
 
+class alreadyJoinedError(Error):
+    """Raised when a player tries to join a second time"""
+
+    def __init__(self, playerID, playerUsername):
+        self.message = "User {0} - {1} tried joining a second time.".format(playerID, playerUsername)
+
+    @staticmethod
+    async def send_msg():
+        await mainChannel.send("You're already in the game, bastard. May your soul rot like the grape under my fridge.")
+
+    def __str__(self):
+        return self.message
+
+
 class Player:
     """Represents each player currently in the game."""
 
-    def __init__(self, playerName, playerID, roleID, member):
+    def __init__(self, playerName, playerID, role, member):
         self.playerName = playerName
         self.playerID = playerID
         self.hand = []
-        self.roleID = roleID
+        self.role = role
         self.member = member
 
     def drawCard(self, deck):
@@ -151,14 +165,22 @@ class Deck:
 
 class Game:
     def __init__(self):
-        self.inLobby = False  # Assuming Game object is created by the lobby command
+        self.inLobby = False
         self.inGame = False
         self.isReverse = False
         self.players = []
+        self.deck = Deck()
 
     def addPlayer(self, player: Player):
         self.players.append(player)
         print("User {0} - {1} added to game players".format(player.getID(), player.getNick()))
+        print("Playerlist is now:")
+        for player in self.players:
+            print(str(player.playerID) + " - " + player.playerName)
+            print("----------------------------")
+
+    def numPlayers(self):
+        return len(self.players)
 
 
 @bot.command(pass_context=True)
@@ -182,13 +204,38 @@ async def lobby(ctx):
 
 
 @bot.command(pass_context=True)
+async def join(ctx):
+    try:
+        global game
+        alreadyJoined = False
+        for player in game.players:
+            if player.playerID == ctx.message.author.id:
+                alreadyJoined = True
+        if alreadyJoined:
+            raise alreadyJoinedError(ctx.message.author.id, ctx.message.author.nick)
+        member = await commands.MemberConverter().convert(ctx, str(ctx.message.author.id))
+        roleNum = game.numPlayers() + 1
+        role = get(member.guild.roles, name=("Player " + str(roleNum)))
+        newPlayer = Player(ctx.message.author.nick, ctx.message.author.id, role, member)
+        game.addPlayer(newPlayer)
+
+        await mainChannel.send(ctx.message.author.mention + " has joined the game!")
+    except Exception as e:
+        await runException(e)
+
+
+@bot.command(pass_context=True)
 async def start(ctx):
     try:
+        global game
         if not game.inLobby:
             raise onlyInLobbyError(ctx.message.author.id, ctx.message.author.nick)
 
         print("User {0} - {1} started the game".format(ctx.message.author.id, ctx.message.author.nick))
         await mainChannel.send("Starting game!")
+
+        game.inLobby = False
+        game.inGame = True
 
     except Exception as e:
         await runException(e)
