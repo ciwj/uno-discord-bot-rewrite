@@ -168,6 +168,7 @@ class Game:
         print("User {0} - {1} added to game players".format(player.getID(), player.getNick()))
 
     def listPlayers(self):
+        print("current players:")
         for i in self.players:
             print(player.getNick()) #Zeyad double check I did this right
 
