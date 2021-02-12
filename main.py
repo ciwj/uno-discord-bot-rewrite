@@ -15,6 +15,17 @@ mainChannelID = int(os.getenv('TEST_CHANNEL_ID'))
 description = "This bot has become my living hell"
 prefix = '!'
 
+# TODO commands to add:
+#   Add listPlayers command
+#   Add leaveGame command
+#   Add join command with option for mid-game join (only if you haven't already left)
+
+# TODO fix start command:
+#   Send message on run
+#   Construct deck, deal cards
+#   Display cards
+#   Put card on top of playedCards
+
 bot = commands.Bot(command_prefix=prefix, description=description, case_insensitive=True)
 
 channels = [
@@ -22,11 +33,28 @@ channels = [
     os.getenv('PLAYER_5_CHANNEL'), os.getenv('PLAYER_6_CHANNEL'), os.getenv('PLAYER_7_CHANNEL'), os.getenv('PLAYER_8_CHANNEL'), os.getenv('PLAYER_9_CHANNEL')
 ]
 
+async def runException(e: Exception):
+    print(e)
+    if callable(getattr(e, 'send_msg', False)):
+        await e.send_msg()
+
 
 class Error(Exception):
     """Base Error Class"""
     pass
 
+
+class onlyInLobbyError(Error):
+    """Raised when a player tries to do something only available in a lobby state"""
+    def __init__(self, playerID, playerUsername):
+        self.message = "User {0} - {1} tried running a command only available in a lobby.".format(playerID, playerUsername)
+
+    @staticmethod
+    async def send_msg():
+        await mainChannel.send("This is only available in a lobby.")
+
+    def __str__(self):
+        return self.message
 
 class alreadyInLobbyError(Error):
     """Raised when a player tries to start a second lobby"""
@@ -157,17 +185,20 @@ async def lobby(ctx):
         await mainChannel.send(".here, " + sender + " is trying to start a game!")
 
     except Exception as e:
-        print(e)
-        if callable(getattr(e, 'send_msg', False)):
-            await e.send_msg()
+        await runException(e)
 
 
 @bot.command(pass_context=True)
 async def start(ctx):
     try:
-        pass
+        if not game.inLobby:
+            raise onlyInLobbyError(ctx.message.author.id, ctx.message.author.nick)
+
+        print("User {0} - {1} started the game".format(ctx.message.author.id, ctx.message.author.nick))
+        await mainChannel.send("Starting game!")
+
     except Exception as e:
-        print(e)
+        await runException(e)
 
 
 @bot.event
