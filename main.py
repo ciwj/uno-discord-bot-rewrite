@@ -53,7 +53,10 @@ channels = [
 
 class Card():
     """Creates the card class, defines as value + colour. also a little thing for printing cards
-       (as in print the deck:for every card in deck card.print)"""
+       (as in print the deck: for every card in deck card.print)"""
+
+    value = None
+    colour = None
 
     def __init__(self, value, colour):
         self.value = value
@@ -64,6 +67,11 @@ class Card():
             return str((self.colour) + str(self.value))  # prints as "blue 2"
         else:
             return str(self.value)
+
+    if(colour == 'Void'):
+        def setColour(self, newColour):
+            self.colour = newColour
+
 
 
 class Deck():
