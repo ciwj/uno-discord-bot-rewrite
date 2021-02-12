@@ -11,7 +11,6 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 mainChannelID = int(os.getenv('TEST_CHANNEL_ID'))
 
-
 description = "This bot has become my living hell"
 prefix = '!'
 
@@ -29,9 +28,12 @@ prefix = '!'
 bot = commands.Bot(command_prefix=prefix, description=description, case_insensitive=True)
 
 channels = [
-    os.getenv('PLAYER_0_CHANNEL'), os.getenv('PLAYER_1_CHANNEL'), os.getenv('PLAYER_2_CHANNEL'), os.getenv('PLAYER_3_CHANNEL'), os.getenv('PLAYER_4_CHANNEL'),
-    os.getenv('PLAYER_5_CHANNEL'), os.getenv('PLAYER_6_CHANNEL'), os.getenv('PLAYER_7_CHANNEL'), os.getenv('PLAYER_8_CHANNEL'), os.getenv('PLAYER_9_CHANNEL')
+    os.getenv('PLAYER_0_CHANNEL'), os.getenv('PLAYER_1_CHANNEL'), os.getenv('PLAYER_2_CHANNEL'),
+    os.getenv('PLAYER_3_CHANNEL'), os.getenv('PLAYER_4_CHANNEL'),
+    os.getenv('PLAYER_5_CHANNEL'), os.getenv('PLAYER_6_CHANNEL'), os.getenv('PLAYER_7_CHANNEL'),
+    os.getenv('PLAYER_8_CHANNEL'), os.getenv('PLAYER_9_CHANNEL')
 ]
+
 
 async def runException(e: Exception):
     print(e)
@@ -46,8 +48,10 @@ class Error(Exception):
 
 class onlyInLobbyError(Error):
     """Raised when a player tries to do something only available in a lobby state"""
+
     def __init__(self, playerID, playerUsername):
-        self.message = "User {0} - {1} tried running a command only available in a lobby.".format(playerID, playerUsername)
+        self.message = "User {0} - {1} tried running a command only available in a lobby.".format(playerID,
+                                                                                                  playerUsername)
 
     @staticmethod
     async def send_msg():
@@ -55,6 +59,7 @@ class onlyInLobbyError(Error):
 
     def __str__(self):
         return self.message
+
 
 class alreadyInLobbyError(Error):
     """Raised when a player tries to start a second lobby"""
@@ -98,7 +103,7 @@ class Player:
         self.hand.append(deck.drawFromDeck())
 
     def playCard(self, deck):
-        self.deckList.append(self.hand.pop()) #I think this works but not sure.
+        deck.deckList.append(self.hand.pop())  # I think this works but not sure.
 
     def showHand(self):
         for card in self.hand:
@@ -191,9 +196,8 @@ class Game:
 
     def listPlayers(self):
         print("current players:")
-        for i in self.players:
-            print(player.getNick()) #Zeyad double check I did this right
-
+        for player in self.players:
+            print(str(player.playerID) + " - " + player.playerName)
 
 
 @bot.command(pass_context=True)
@@ -206,7 +210,7 @@ async def lobby(ctx):
 
         member = await commands.MemberConverter().convert(ctx, str(ctx.message.author.id))
         lobbyCreator = Player(ctx.message.author.nick, ctx.message.author.id,
-                              get(member.guild.roles, name=("Player 1")), member)
+                              get(member.guild.roles, name="Player 1"), member)
         game.addPlayer(lobbyCreator)
 
         sender = ctx.message.author.mention
