@@ -55,6 +55,13 @@ class Player:
     def drawCard(self, deck):
         self.hand.append(deck.drawFromDeck())
 
+    def playCard(self, deck):
+        self.deckList.append(self.hand.pop()) #I think this works but not sure.
+
+    def showHand(self):
+        for card in self.hand:
+            print(card)
+
     def getID(self):
         return self.playerID
 
