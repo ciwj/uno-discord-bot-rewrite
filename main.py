@@ -16,7 +16,7 @@ description = "This bot has become my living hell"
 prefix = '!'
 
 # TODO commands to add:
-#   Add listPlayers command
+#   Add listPlayers command DONE BUT DOUBLE CHECK ME
 #   Add leaveGame command
 #   Add join command with option for mid-game join (only if you haven't already left)
 
@@ -166,6 +166,11 @@ class Game:
     def addPlayer(self, player: Player):
         self.players.append(player)
         print("User {0} - {1} added to game players".format(player.getID(), player.getNick()))
+
+    def listPlayers(self):
+        for i in self.players:
+            print(player.getNick()) #Zeyad double check I did this right
+
 
 
 @bot.command(pass_context=True)
