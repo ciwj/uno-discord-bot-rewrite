@@ -17,7 +17,6 @@ bot = commands.Bot(command_prefix=prefix, description=description, case_insensit
 
 # mainChannelID = 709900240919986250
 mainChannelID = 809555265342537738
-mainChannel = bot.get_channel(mainChannelID)
 
 
 class Error(Exception):
@@ -29,7 +28,7 @@ class alreadyInLobbyError(Error):
     """Raised when a player tries to start a second lobby"""
 
     def __init__(self, playerID, playerUsername):
-        self.message = "user {0} - {1} tried creating an extra lobby.".format(playerID, playerUsername)
+        self.message = "User {0} - {1} tried creating an extra lobby.".format(playerID, playerUsername)
 
     @staticmethod
     async def send_msg():
@@ -168,7 +167,8 @@ async def start(ctx):
 
 @bot.event
 async def on_ready():
-    global game
+    global game, mainChannel
+    mainChannel = bot.get_channel(mainChannelID)
     game = Game()
     print("-------------\nLogged in as {0.user}\n-------------\n".format(bot))
 
