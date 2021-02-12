@@ -16,7 +16,7 @@ description = "This bot has become my living hell"
 prefix = '!'
 
 # TODO commands to add:
-#   Add listPlayers command
+#   Add listPlayers command DONE BUT DOUBLE CHECK ME
 #   Add leaveGame command
 #   Add join command with option for mid-game join (only if you haven't already left)
 
@@ -96,6 +96,13 @@ class Player:
 
     def drawCard(self, deck):
         self.hand.append(deck.drawFromDeck())
+
+    def playCard(self, deck):
+        self.deckList.append(self.hand.pop()) #I think this works but not sure.
+
+    def showHand(self):
+        for card in self.hand:
+            print(card)
 
     def getID(self):
         return self.playerID
@@ -181,6 +188,12 @@ class Game:
 
     def numPlayers(self):
         return len(self.players)
+
+    def listPlayers(self):
+        print("current players:")
+        for i in self.players:
+            print(player.getNick()) #Zeyad double check I did this right
+
 
 
 @bot.command(pass_context=True)
