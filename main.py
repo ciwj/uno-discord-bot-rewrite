@@ -14,17 +14,6 @@ mainChannelID = int(os.getenv('TEST_CHANNEL_ID'))
 description = "This bot has become my living hell"
 prefix = '!'
 
-# TODO commands to add:
-#   Add listPlayers command DONE BUT DOUBLE CHECK ME
-#   Add leaveGame command
-#   Add join command with option for mid-game join (only if you haven't already left)
-
-# TODO fix start command:
-#   Send message on run
-#   Construct deck, deal cards
-#   Display cards
-#   Put card on top of playedCards
-
 bot = commands.Bot(command_prefix=prefix, description=description, case_insensitive=True)
 
 channels = [
@@ -178,8 +167,8 @@ class Deck:
         random.shuffle(self.deckList)  # Should work, double-check
 
     def drawFromDeck(self) -> Card:
-        draw = self.deckList.pop()
-        return draw
+        drawnCard = self.deckList.pop()
+        return drawnCard
 
 
 class Game:
@@ -240,6 +229,7 @@ async def lobby(ctx):
         await runException(e)
 
 
+# TODO Add join command with option for mid-game join (only if you haven't already left)
 @bot.command(pass_context=True)
 async def join(ctx):
     """Adds player to playerList"""
@@ -265,6 +255,10 @@ async def join(ctx):
         await runException(e)
 
 
+# TODO fix start command:
+#   Construct deck, deal cards
+#   Display cards
+#   Put card on top of playedCards
 @bot.command(pass_context=True)
 async def start(ctx):
     try:
@@ -279,6 +273,76 @@ async def start(ctx):
         game.inLobby = False
         game.inGame = True
 
+    except Exception as e:
+        await runException(e)
+
+
+# TODO Add listPlayers command
+@bot.command(pass_context=True)
+async def listPlayers(ctx):
+    """Lists players in game"""
+    try:
+        pass
+    except Exception as e:
+        await runException(e)
+
+
+# TODO Add leaveGame command
+@bot.command(pass_context=True)
+async def listPlayers(ctx):
+    """Lists the players in game"""
+    try:
+        pass
+    except Exception as e:
+        await runException(e)
+
+
+# TODO Add play command
+@bot.command(pass_context=True)
+async def play(ctx):
+    """Plays a card"""
+    try:
+        pass
+    except Exception as e:
+        await runException(e)
+
+
+# TODO Add draw command
+@bot.command(pass_context=True)
+async def draw(ctx):
+    """Draws a card for a player"""
+    try:
+        pass
+    except Exception as e:
+        await runException(e)
+
+
+# TODO add cardNum command
+@bot.command(pass_context=True)
+async def cardNum(ctx):
+    """Shows the amount of cards each player has"""
+    try:
+        pass
+    except Exception as e:
+        await runException(e)
+
+
+# TODO add stopGame command
+@bot.command(pass_context=True)
+async def stopGame(ctx):
+    """Stops the game"""
+    try:
+        pass
+    except Exception as e:
+        await runException(e)
+
+
+# TODO add closeLobby command
+@bot.command(pass_context=True)
+async def closeLobby(ctx):
+    """Closes an open lobby"""
+    try:
+        pass
     except Exception as e:
         await runException(e)
 
