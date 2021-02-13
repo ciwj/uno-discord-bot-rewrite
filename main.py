@@ -16,6 +16,8 @@ prefix = '!'
 
 bot = commands.Bot(command_prefix=prefix, description=description, case_insensitive=True)
 
+# TODO: Add help information for commands
+
 channels = [
     os.getenv('PLAYER_0_CHANNEL'), os.getenv('PLAYER_1_CHANNEL'), os.getenv('PLAYER_2_CHANNEL'),
     os.getenv('PLAYER_3_CHANNEL'), os.getenv('PLAYER_4_CHANNEL'), os.getenv('PLAYER_5_CHANNEL'),
