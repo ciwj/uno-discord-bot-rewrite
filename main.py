@@ -29,13 +29,14 @@ bot = commands.Bot(command_prefix=prefix, description=description, case_insensit
 
 channels = [
     os.getenv('PLAYER_0_CHANNEL'), os.getenv('PLAYER_1_CHANNEL'), os.getenv('PLAYER_2_CHANNEL'),
-    os.getenv('PLAYER_3_CHANNEL'), os.getenv('PLAYER_4_CHANNEL'),
-    os.getenv('PLAYER_5_CHANNEL'), os.getenv('PLAYER_6_CHANNEL'), os.getenv('PLAYER_7_CHANNEL'),
+    os.getenv('PLAYER_3_CHANNEL'), os.getenv('PLAYER_4_CHANNEL'), os.getenv('PLAYER_5_CHANNEL'),
+    os.getenv('PLAYER_6_CHANNEL'), os.getenv('PLAYER_7_CHANNEL'),
     os.getenv('PLAYER_8_CHANNEL'), os.getenv('PLAYER_9_CHANNEL')
 ]
 
 
 async def runException(e: Exception):
+    """Helper function to send an Error's discord msg if applicable"""
     print(e)
     if callable(getattr(e, 'send_msg', False)):
         await e.send_msg()
@@ -148,7 +149,8 @@ class Deck:
 
     def constructDeck(self):
         """Constructs a deck from scratch
-        Uno decks have two sets of every standard card except for 0s, which have one"""
+        Uno decks have two sets of every standard card except for 0s, which have one,
+        and the wild types, which have 4 each"""
         for i in ['Red', 'Green', 'Yellow', 'Blue']:
             for j in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'Draw 2', 'Reverse', 'Skip']:
                 self.deckList.append(Card(j, i))
@@ -162,17 +164,22 @@ class Deck:
         for card in self.playingPile:
             print(card)
 
+    async def showPlayingPileTop(self):
+        lastCard = self.playingPile[-1]
+        print("Last card played: " + lastCard)
+        await mainChannel.send("Last card played: " + lastCard)
+
     def showDeck(self):
         for card in self.deckList:
             print(card)
 
     def shuffleDeck(self):
         random.seed(datetime.now())
-        self.shuffledCards = random.shuffle(self.deckList)
+        random.shuffle(self.deckList)  # Should work, double-check
 
-    def drawFromDeck(self):
-        self.draw = self.deckList.pop()
-        return self.draw
+    def drawFromDeck(self) -> Card:
+        draw = self.deckList.pop()
+        return draw
 
 
 class Game:
@@ -181,6 +188,7 @@ class Game:
         self.inGame = False
         self.isReverse = False
         self.players = []
+        self.playersLeft = []
         self.deck = Deck()
 
     def addPlayer(self, player: Player):
@@ -188,6 +196,18 @@ class Game:
         print("User {0} - {1} added to game players".format(player.getID(), player.getNick()))
         print("Playerlist is now:")
         for player in self.players:
+            print(str(player.playerID) + " - " + player.playerName)
+            print("----------------------------")
+
+    def removePlayer(self, player: Player):
+        self.playersLeft.remove(player)
+        print("User {0} - {1} removed from game players".format(player.getID(), player.getNick()))
+        print("Playerlist is now:")
+        for player in self.players:
+            print(str(player.playerID) + " - " + player.playerName)
+            print("----------------------------")
+        print("playersLeft list is now:")
+        for player in self.playersLeft:
             print(str(player.playerID) + " - " + player.playerName)
             print("----------------------------")
 
@@ -222,18 +242,22 @@ async def lobby(ctx):
 
 @bot.command(pass_context=True)
 async def join(ctx):
+    """Adds player to playerList"""
     try:
         global game
         alreadyJoined = False
+
         for player in game.players:
             if player.playerID == ctx.message.author.id:
                 alreadyJoined = True
         if alreadyJoined:
             raise alreadyJoinedError(ctx.message.author.id, ctx.message.author.nick)
+
         member = await commands.MemberConverter().convert(ctx, str(ctx.message.author.id))
         roleNum = game.numPlayers() + 1
         role = get(member.guild.roles, name=("Player " + str(roleNum)))
         newPlayer = Player(ctx.message.author.nick, ctx.message.author.id, role, member)
+
         game.addPlayer(newPlayer)
 
         await mainChannel.send(ctx.message.author.mention + " has joined the game!")
@@ -244,6 +268,7 @@ async def join(ctx):
 @bot.command(pass_context=True)
 async def start(ctx):
     try:
+        """Starts game - sets game.inLobby to False, and game.inGame to True."""
         global game
         if not game.inLobby:
             raise onlyInLobbyError(ctx.message.author.id, ctx.message.author.nick)
@@ -260,6 +285,7 @@ async def start(ctx):
 
 @bot.event
 async def on_ready():
+    """Runs on bot startup. Creates a Game object and defines the mainChannel"""
     global game, mainChannel
     mainChannel = bot.get_channel(mainChannelID)
     game = Game()
