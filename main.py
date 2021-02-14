@@ -136,6 +136,7 @@ class Deck:
 
     def __init__(self):
         self.constructDeck()
+        self.shuffleDeck()
         self.playingPile = []
 
     def constructDeck(self):
@@ -169,6 +170,9 @@ class Deck:
         random.shuffle(self.deckList)  # Should work, double-check
 
     def drawFromDeck(self) -> Card:
+        if len(self.deckList) == 0:
+            self.constructDeck()
+            self.shuffleDeck()
         drawnCard = self.deckList.pop()
         return drawnCard
 
@@ -188,19 +192,21 @@ class Game:
         print("Playerlist is now:")
         for player in self.players:
             print(str(player.playerID) + " - " + player.playerName)
-            print("----------------------------")
+            print("")
 
     def removePlayer(self, player: Player):
-        self.playersLeft.remove(player)
+        self.players.remove(player)
+        if self.inGame:
+            self.playersLeft.append(player)
         print("User {0} - {1} removed from game players".format(player.getID(), player.getNick()))
         print("Playerlist is now:")
         for player in self.players:
             print(str(player.playerID) + " - " + player.playerName)
-            print("----------------------------")
+        print("")
         print("playersLeft list is now:")
         for player in self.playersLeft:
             print(str(player.playerID) + " - " + player.playerName)
-            print("----------------------------")
+        print("")
 
     def numPlayers(self):
         return len(self.players)
@@ -258,7 +264,7 @@ async def join(ctx):
 
 
 # TODO fix start command:
-#   Construct deck, deal cards
+#   Deal cards
 #   Display cards
 #   Put card on top of playedCards
 @bot.command(pass_context=True)
@@ -279,22 +285,29 @@ async def start(ctx):
         await runException(e)
 
 
-# TODO Add listPlayers command
 @bot.command(pass_context=True)
 async def listPlayers(ctx):
-    """Lists players in game"""
+    """Lists players currently in the game."""
     try:
-        pass
+        print("User {0} - {1} has listed all players".format(ctx.message.author.id, ctx.message.author.nick))
+        str = "Players:\n"
+        for player in game.players:
+            str += player.member.mention + "\n"
+        await mainChannel.send(str)
     except Exception as e:
         await runException(e)
 
 
-# TODO Add leaveGame command
 @bot.command(pass_context=True)
-async def listPlayers(ctx):
-    """Lists the players in game"""
+async def leave(ctx):
+    """Removes a player from the game."""
     try:
-        pass
+        userID = ctx.message.author.id
+        for player in game.players:
+            if player.playerID == userID:
+                playerToRemove = player
+        game.removePlayer(playerToRemove)
+        await mainChannel.send("You have been removed from the game.")
     except Exception as e:
         await runException(e)
 
