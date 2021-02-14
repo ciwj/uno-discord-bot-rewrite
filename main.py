@@ -41,7 +41,7 @@ class Error(Exception):
 class onlyInLobbyError(Error):
     """Raised when a player tries to do something only available in a lobby state"""
 
-    def __init__(self, playerID, playerUsername):
+    def __init__(self, playerID: int, playerUsername: str):
         self.message = "User {0} - {1} tried running a command only available in a lobby.".format(playerID,
                                                                                                   playerUsername)
 
@@ -56,7 +56,7 @@ class onlyInLobbyError(Error):
 class alreadyInLobbyError(Error):
     """Raised when a player tries to start a second lobby"""
 
-    def __init__(self, playerID, playerUsername):
+    def __init__(self, playerID: int, playerUsername: str):
         self.message = "User {0} - {1} tried creating an extra lobby.".format(playerID, playerUsername)
 
     @staticmethod
@@ -70,7 +70,7 @@ class alreadyInLobbyError(Error):
 class alreadyJoinedError(Error):
     """Raised when a player tries to join a second time"""
 
-    def __init__(self, playerID, playerUsername):
+    def __init__(self, playerID: int, playerUsername: str):
         self.message = "User {0} - {1} tried joining a second time.".format(playerID, playerUsername)
 
     @staticmethod
@@ -81,33 +81,6 @@ class alreadyJoinedError(Error):
         return self.message
 
 
-class Player:
-    """Represents each player currently in the game."""
-
-    def __init__(self, playerName, playerID, role, member):
-        self.playerName = playerName
-        self.playerID = playerID
-        self.hand = []
-        self.role = role
-        self.member = member
-
-    def drawCard(self, deck):
-        self.hand.append(deck.drawFromDeck())
-
-    def playCard(self, deck):
-        deck.deckList.append(self.hand.pop())  # I think this works but not sure.
-
-    def showHand(self):
-        for card in self.hand:
-            print(card)
-
-    def getID(self):
-        return self.playerID
-
-    def getNick(self):
-        return self.playerName
-
-
 class Card:
     """Creates the card class, defines as value + colour. also a little thing for printing cards
        (as in print the deck: for every card in deck card.print)"""
@@ -115,7 +88,7 @@ class Card:
     value = None
     colour = None
 
-    def __init__(self, value, colour):
+    def __init__(self, value: str, colour: str):
         self.value = value
         self.colour = colour
 
@@ -126,7 +99,7 @@ class Card:
             return str(self.value)
 
     if colour == 'Void':
-        def setColour(self, newColour):
+        def setColour(self, newColour: str):
             self.colour = newColour
 
 
@@ -177,6 +150,33 @@ class Deck:
         return drawnCard
 
 
+class Player:
+    """Represents each player currently in the game."""
+
+    def __init__(self, playerName: str, playerID: int, role, member):
+        self.playerName = playerName
+        self.playerID = playerID
+        self.hand = []
+        self.role = role
+        self.member = member
+
+    def drawCard(self, deck: Deck):
+        self.hand.append(deck.drawFromDeck())
+
+    def playCard(self, deck: Deck):
+        deck.deckList.append(self.hand.pop())  # I think this works but not sure.
+
+    def showHand(self):
+        for card in self.hand:
+            print(card)
+
+    def getID(self):
+        return self.playerID
+
+    def getNick(self):
+        return self.playerName
+
+
 class Game:
     def __init__(self):
         self.inLobby = False
@@ -220,7 +220,6 @@ class Game:
 @bot.command(pass_context=True)
 async def lobby(ctx):
     try:
-        global game
         if game.inLobby:
             raise alreadyInLobbyError(ctx.message.author.id, ctx.message.author.nick)
         game.inLobby = True
@@ -242,7 +241,6 @@ async def lobby(ctx):
 async def join(ctx):
     """Adds player to playerList"""
     try:
-        global game
         alreadyJoined = False
 
         for player in game.players:
@@ -271,7 +269,6 @@ async def join(ctx):
 async def start(ctx):
     try:
         """Starts game - sets game.inLobby to False, and game.inGame to True."""
-        global game
         if not game.inLobby:
             raise onlyInLobbyError(ctx.message.author.id, ctx.message.author.nick)
 
@@ -290,10 +287,10 @@ async def listPlayers(ctx):
     """Lists players currently in the game."""
     try:
         print("User {0} - {1} has listed all players".format(ctx.message.author.id, ctx.message.author.nick))
-        str = "Players:\n"
+        strToPrint = "Players:\n"
         for player in game.players:
-            str += player.member.mention + "\n"
-        await mainChannel.send(str)
+            strToPrint += player.member.mention + "\n"
+        await mainChannel.send(strToPrint)
     except Exception as e:
         await runException(e)
 
@@ -307,7 +304,7 @@ async def leave(ctx):
         for player in game.players:
             if player.playerID == userID:
                 playerToRemove = player
-        if playerToRemove != None:
+        if playerToRemove is not None:
             game.removePlayer(playerToRemove)
             await mainChannel.send("You have been removed from the game.")
         else:
