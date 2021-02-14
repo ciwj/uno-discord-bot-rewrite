@@ -303,11 +303,16 @@ async def leave(ctx):
     """Removes a player from the game."""
     try:
         userID = ctx.message.author.id
+        playerToRemove = None
         for player in game.players:
             if player.playerID == userID:
                 playerToRemove = player
-        game.removePlayer(playerToRemove)
-        await mainChannel.send("You have been removed from the game.")
+        if playerToRemove != None:
+            game.removePlayer(playerToRemove)
+            await mainChannel.send("You have been removed from the game.")
+        else:
+            await mainChannel.send("You aren't in the game, fool.")
+
     except Exception as e:
         await runException(e)
 
