@@ -266,7 +266,7 @@ async def join(ctx):
 #   Display cards
 #   Put card on top of playedCards
 @bot.command(pass_context=True)
-async def start(ctx):
+async def start(ctx, game, Player):
     try:
         """Starts game - sets game.inLobby to False, and game.inGame to True."""
         if not game.inLobby:
@@ -274,6 +274,11 @@ async def start(ctx):
 
         print("User {0} - {1} started the game".format(ctx.message.author.id, ctx.message.author.nick))
         await mainChannel.send("Starting game!")
+
+        """dealing cards """
+        for i in game.players:
+            for j in range (0,7):
+                player.drawCard() #how to identify each player?
 
         game.inLobby = False
         game.inGame = True
@@ -314,11 +319,15 @@ async def leave(ctx):
         await runException(e)
 
 
-# TODO Add play command
+# TODO Add play command, currently needs turn identifier
 @bot.command(pass_context=True)
 async def play(ctx):
     """Plays a card"""
     try:
+        userID = ctx.message.author.id
+        for player in game.players:
+            if player.playerID == userID:
+                player.playCard()
         pass
     except Exception as e:
         await runException(e)
