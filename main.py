@@ -307,7 +307,7 @@ async def start(ctx):
         for player in game.players:
             for j in range(7):
                 player.drawCard()  # This will append 7 cards to each player currently in game
-            await player.getMember().add_roles(player.getMember(), player.getRole()) # Appends role to player
+            await player.getMember().add_roles(player.getMember(), player.getRole())  # Appends role to player
 
         game.inLobby = False
         game.inGame = True
