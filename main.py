@@ -304,26 +304,32 @@ async def lobby(ctx):
         await runException(e)
 
 
-# TODO Add join command with option for mid-game join (only if you haven't already left)
-# TODO when player joins midgame, give them a role and draw 7 cards for them
 @bot.command(pass_context=True)
 async def join(ctx):
     """Adds player to playerList"""
     try:
         alreadyJoined = False
-
+        alreadyLeft = False
         for player in game.players:
-            if player.playerID == ctx.message.author.id:
-                alreadyJoined = True
-        if alreadyJoined:
-            raise alreadyJoinedError(ctx.message.author.id, ctx.message.author.nick)
+            if player.getID() == ctx.message.author.id:
+                raise alreadyJoinedError(ctx.message.author.id, ctx.message.author.nick)
+        for player in game.playersLeft:
+            if player.getID() == ctx.message.author.id:
+                alreadyLeft = True
+        if alreadyLeft:
+            await mainChannel.send("Begone bitch")
+        else:
+            member = await commands.MemberConverter().convert(ctx, str(ctx.message.author.id))
+            newPlayer = Player(ctx.message.author.nick, ctx.message.author.id, member)
+            game.addPlayer(newPlayer)
+            # TODO give player role if joining midgame
+            if game.inGame:
+                player = identifyPlayer(ctx.message.author.id)
+                for j in range(7):
+                    player.drawCard()
 
-        member = await commands.MemberConverter().convert(ctx, str(ctx.message.author.id))
-        newPlayer = Player(ctx.message.author.nick, ctx.message.author.id, member)
 
-        game.addPlayer(newPlayer)
-
-        await mainChannel.send(ctx.message.author.mention + " has joined the game!")
+            await mainChannel.send(ctx.message.author.mention + " has joined the game!")
     except Exception as e:
         await runException(e)
 
