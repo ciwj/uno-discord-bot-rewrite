@@ -1,10 +1,14 @@
 import os
 import random
-from datetime import datetime
+import logging
 
+from datetime import datetime
 from discord.utils import get
 from discord.ext import commands
 from dotenv import load_dotenv
+
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -28,7 +32,7 @@ channels = [
 
 async def runException(e: Exception):
     """Helper function to send an Error's discord msg if applicable"""
-    print(e)
+    print(logger.exception(e))
     if callable(getattr(e, 'send_msg', False)):
         await e.send_msg()
 
@@ -160,11 +164,10 @@ class Deck:
 class Player:
     """Represents each player currently in the game."""
 
-    def __init__(self, playerName: str, playerID: int, role, member):
+    def __init__(self, playerName: str, playerID: int, member):
         self.playerName = playerName
         self.playerID = playerID
         self.hand = []
-        self.role = role
         self.member = member
         self.isTurn = False
 
@@ -192,9 +195,6 @@ class Player:
 
     def getMember(self):
         return self.member
-
-    def getRole(self):
-        return self.role
 
     def setTurn(self, isTurnNew: bool):
         self.isTurn = isTurnNew
@@ -241,7 +241,7 @@ class Game:
 
     def nextTurn(self):
         for player in self.players:
-            if player.isTurn == True:
+            if player.isTurn:
                 currentPlayerTurn = player
         currentTurn = self.players.index(currentPlayerTurn)
         currentPlayerTurn.setTurn(False)
@@ -271,8 +271,7 @@ async def lobby(ctx):
         game.inLobby = True
 
         member = await commands.MemberConverter().convert(ctx, str(ctx.message.author.id))
-        lobbyCreator = Player(ctx.message.author.nick, ctx.message.author.id,
-                              get(member.guild.roles, name="Player 1"), member)
+        lobbyCreator = Player(ctx.message.author.nick, ctx.message.author.id, member)
         game.addPlayer(lobbyCreator)
 
         sender = ctx.message.author.mention
@@ -297,9 +296,7 @@ async def join(ctx):
             raise alreadyJoinedError(ctx.message.author.id, ctx.message.author.nick)
 
         member = await commands.MemberConverter().convert(ctx, str(ctx.message.author.id))
-        roleNum = game.numPlayers() + 1
-        role = get(member.guild.roles, name=("Player " + str(roleNum)))
-        newPlayer = Player(ctx.message.author.nick, ctx.message.author.id, role, member)
+        newPlayer = Player(ctx.message.author.nick, ctx.message.author.id, member)
 
         game.addPlayer(newPlayer)
 
@@ -324,9 +321,11 @@ async def start(ctx):
 
         """Dealing cards & giving roles"""
         for player in game.players:
+            roleName = "Player " + str(game.players.index(player) + 1)
+            role = get(ctx.guild.roles,name=roleName)
             for j in range(7):
                 player.drawCard()  # This will append 7 cards to each player currently in game
-            await player.getMember().add_roles(player.getMember(), player.getRole())  # Appends role to player
+            await player.getMember().add_roles(role)  # Appends role to player
 
         game.players[0].setTurn(True)
         game.inLobby = False
