@@ -140,10 +140,10 @@ class Deck:
         for card in self.playingPile:
             print(card)
 
-    async def showPlayingPileTop(self):
+    def playingPileTop(self):
         lastCard = self.playingPile[-1]
-        print("Last card played: " + lastCard)
-        await mainChannel.send("Last card played: " + lastCard)
+        print("Last card played: " + str(lastCard))
+        return lastCard
 
     def showDeck(self):
         for card in self.deckList:
@@ -160,6 +160,9 @@ class Deck:
             self.shuffleDeck()
         drawnCard = self.deckList.pop()
         return drawnCard
+
+    def addToPile(self, cardToAdd: Card):
+        self.playingPile.append(cardToAdd)
 
 
 class Player:
@@ -226,7 +229,7 @@ class Game:
         if self.inGame:
             self.playersLeft.append(player)
         print("User {0} - {1} removed from game players".format(player.getID(), player.getNick()))
-        print("Playerlist is now:")
+        print("Player list is now:")
         for player in self.players:
             print(str(player.playerID) + " - " + player.playerName)
         print("")
@@ -325,8 +328,6 @@ async def join(ctx):
         await runException(e)
 
 
-# TODO fix start command:
-#   Put card on top of playedCards
 @bot.command(pass_context=True)
 async def start(ctx):
     try:
@@ -340,13 +341,14 @@ async def start(ctx):
         """Dealing cards & giving roles"""
         for player in game.players:
             roleName = "Player " + str(game.players.index(player) + 1)
-            role = get(ctx.guild.roles,name=roleName)
+            role = get(ctx.guild.roles, name=roleName)
             for j in range(7):
                 player.drawCard()  # Append 7 cards to each player currently in game
             await player.getMember().add_roles(role)  # Appends role to player
             await printCards(player)
 
-
+        game.deck.addToPile(game.deck.drawFromDeck())
+        await mainChannel.send("Top of Pile: " + str(game.deck.playingPileTop()))
         game.players[0].setTurn(True)
         game.inLobby = False
         game.inGame = True
@@ -410,7 +412,7 @@ async def play(ctx, cardNum):
 async def draw(ctx):
     """Draws a card for a player"""
     try:
-        player = identifyPlayer(ctx.message.author.id) # broke
+        player = identifyPlayer(ctx.message.author.id)  # broke
         player.drawCard()
         await printCards(player)
     except Exception as e:
