@@ -98,7 +98,7 @@ class Card:
 
     def __str__(self) -> str:
         if self.colour != 'Void':
-            return str(self.colour + str(self.value))  # prints as "blue 2"
+            return str(self.colour + " " + str(self.value))  # prints as "blue 2"
         else:
             return str(self.value)
 
@@ -199,6 +199,9 @@ class Player:
     def setTurn(self, isTurnNew: bool):
         self.isTurn = isTurnNew
 
+    def getHand(self):
+        return self.hand
+
 
 class Game:
     def __init__(self):
@@ -263,6 +266,20 @@ def identifyPlayer(playerID: int) -> Player:
     print("No player with ID {} found.".format(playerID))
 
 
+async def printCards(player: Player):
+    playerRoles = player.getMember().roles
+    for role in playerRoles:
+        if "Player" in role.name:
+            playerRole = role
+    channelNum = playerRole.name[-1]
+    channel = get(guild.text_channels, name="player-" + channelNum)
+    await channel.purge(limit=50)
+    stringToPrint = "**Your Cards:**\n"
+    for card in player.getHand():
+        stringToPrint += str(card) + "\n"
+    await channel.send(stringToPrint)
+
+
 @bot.command(pass_context=True)
 async def lobby(ctx):
     try:
@@ -306,7 +323,6 @@ async def join(ctx):
 
 
 # TODO fix start command:
-#   Deal cards
 #   Display cards
 #   Put card on top of playedCards
 @bot.command(pass_context=True)
@@ -324,8 +340,10 @@ async def start(ctx):
             roleName = "Player " + str(game.players.index(player) + 1)
             role = get(ctx.guild.roles,name=roleName)
             for j in range(7):
-                player.drawCard()  # This will append 7 cards to each player currently in game
+                player.drawCard()  # Append 7 cards to each player currently in game
             await player.getMember().add_roles(role)  # Appends role to player
+            await printCards(player)
+
 
         game.players[0].setTurn(True)
         game.inLobby = False
@@ -428,9 +446,10 @@ async def closeLobby(ctx):
 @bot.event
 async def on_ready():
     """Runs on bot startup. Creates a Game object and defines the mainChannel"""
-    global game, mainChannel
+    global game, mainChannel, guild
     mainChannel = bot.get_channel(mainChannelID)
     game = Game()
+    guild = bot.guilds[0]
     print("-------------\nLogged in as {0.user}\n-------------\n".format(bot))
 
 
