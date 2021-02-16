@@ -22,6 +22,7 @@ bot = commands.Bot(command_prefix=prefix, description=description, case_insensit
 
 # TODO: Add help information for commands
 
+# TODO change this to automatically get channels that are named properly
 channels = [
     os.getenv('PLAYER_0_CHANNEL'), os.getenv('PLAYER_1_CHANNEL'), os.getenv('PLAYER_2_CHANNEL'),
     os.getenv('PLAYER_3_CHANNEL'), os.getenv('PLAYER_4_CHANNEL'), os.getenv('PLAYER_5_CHANNEL'),
@@ -114,7 +115,7 @@ class Card:
 
 
 class Deck:
-    """the deck. defines and constructs the deck with everything except wildcards cuz those are hard uwu."""
+    """the deck. defines and constructs the deck with everything uwu."""
     deckList = []
 
     def __init__(self):
@@ -275,8 +276,10 @@ async def printCards(player: Player):
     channel = get(guild.text_channels, name="player-" + channelNum)
     await channel.purge(limit=50)
     stringToPrint = "**Your Cards:**\n"
+    i = 1
     for card in player.getHand():
-        stringToPrint += str(card) + "\n"
+        stringToPrint += str(i) + ": " + str(card) + "\n"
+        i += 1
     await channel.send(stringToPrint)
 
 
@@ -323,7 +326,6 @@ async def join(ctx):
 
 
 # TODO fix start command:
-#   Display cards
 #   Put card on top of playedCards
 @bot.command(pass_context=True)
 async def start(ctx):
@@ -408,7 +410,9 @@ async def play(ctx, cardNum):
 async def draw(ctx):
     """Draws a card for a player"""
     try:
-        pass
+        player = identifyPlayer(ctx.message.author.id) # broke
+        player.drawCard()
+        await printCards(player)
     except Exception as e:
         await runException(e)
 
