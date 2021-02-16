@@ -102,6 +102,12 @@ class Card:
         def setColour(self, newColour: str):
             self.colour = newColour
 
+    def getColour(self):
+        return self.colour
+
+    def getValue(self):
+        return self.value
+
 
 class Deck:
     """the deck. defines and constructs the deck with everything except wildcards cuz those are hard uwu."""
@@ -142,6 +148,7 @@ class Deck:
         random.seed(datetime.now())
         random.shuffle(self.deckList)  # Should work, double-check
 
+    # TODO empty most of playing pile when deck is empty
     def drawFromDeck(self) -> Card:
         if len(self.deckList) == 0:
             self.constructDeck()
@@ -159,12 +166,19 @@ class Player:
         self.hand = []
         self.role = role
         self.member = member
+        self.isTurn = False
 
-    def drawCard(self, deck: Deck):
-        self.hand.append(deck.drawFromDeck())
+    def drawCard(self):
+        self.hand.append(game.deck.drawFromDeck())
 
-    def playCard(self, deck: Deck):
-        deck.deckList.append(self.hand.pop())  # I think this works but not sure.
+    # TODO add condition for if the card isn't playable
+    async def playCard(self, cardNo):
+        lastCard = self.hand[-1]
+        cardToPlay = self.hand[cardNo]
+        if lastCard.getColour() == cardToPlay.getColour() or lastCard.getValue() == cardToPlay.getValue():
+            game.deck.deckList.append(self.hand.pop(cardNo - 1))  # I think this works but not sure.
+        else:
+            await mainChannel.send("Card not valid and neither are you.")
 
     def showHand(self):
         for card in self.hand:
@@ -175,6 +189,12 @@ class Player:
 
     def getNick(self):
         return self.playerName
+
+    def getMember(self):
+        return self.member
+
+    def getRole(self):
+        return self.role
 
 
 class Game:
@@ -217,6 +237,13 @@ class Game:
             print(str(player.playerID) + " - " + player.playerName)
 
 
+def identifyPlayer(playerID: int) -> Player:
+    for player in game.players:
+        if player.getID == playerID:
+            return player
+    print("No player with ID {} found.".format(playerID))
+
+
 @bot.command(pass_context=True)
 async def lobby(ctx):
     try:
@@ -237,6 +264,7 @@ async def lobby(ctx):
 
 
 # TODO Add join command with option for mid-game join (only if you haven't already left)
+# TODO when player joins midgame, give them a role and draw 7 cards for them
 @bot.command(pass_context=True)
 async def join(ctx):
     """Adds player to playerList"""
@@ -266,7 +294,7 @@ async def join(ctx):
 #   Display cards
 #   Put card on top of playedCards
 @bot.command(pass_context=True)
-async def start(ctx, game, Player):
+async def start(ctx):
     try:
         """Starts game - sets game.inLobby to False, and game.inGame to True."""
         if not game.inLobby:
@@ -275,10 +303,11 @@ async def start(ctx, game, Player):
         print("User {0} - {1} started the game".format(ctx.message.author.id, ctx.message.author.nick))
         await mainChannel.send("Starting game!")
 
-        """dealing cards """
-        for i in game.players:
-            for j in range (0,7):
-                player.drawCard() #how to identify each player?
+        """Dealing cards & giving roles"""
+        for player in game.players:
+            for j in range(7):
+                player.drawCard()  # This will append 7 cards to each player currently in game
+            await player.getMember().add_roles(player.getMember(), player.getRole()) # Appends role to player
 
         game.inLobby = False
         game.inGame = True
@@ -306,9 +335,7 @@ async def leave(ctx):
     try:
         userID = ctx.message.author.id
         playerToRemove = None
-        for player in game.players:
-            if player.playerID == userID:
-                playerToRemove = player
+        playerToRemove = identifyPlayer(userID)
         if playerToRemove is not None:
             game.removePlayer(playerToRemove)
             await mainChannel.send("You have been removed from the game.")
@@ -321,14 +348,12 @@ async def leave(ctx):
 
 # TODO Add play command, currently needs turn identifier
 @bot.command(pass_context=True)
-async def play(ctx):
+async def play(ctx, cardNum):
     """Plays a card"""
     try:
         userID = ctx.message.author.id
-        for player in game.players:
-            if player.playerID == userID:
-                player.playCard()
-        pass
+        player = identifyPlayer(userID)
+        player.playCard(cardNum)
     except Exception as e:
         await runException(e)
 
