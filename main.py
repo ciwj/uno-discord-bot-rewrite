@@ -196,6 +196,9 @@ class Player:
     def getRole(self):
         return self.role
 
+    def setTurn(self, isTurnNew: bool):
+        self.isTurn = isTurnNew
+
 
 class Game:
     def __init__(self):
@@ -235,6 +238,22 @@ class Game:
         print("current players:")
         for player in self.players:
             print(str(player.playerID) + " - " + player.playerName)
+
+    def nextTurn(self):
+        for player in self.players:
+            if player.isTurn == True:
+                currentPlayerTurn = player
+        currentTurn = self.players.index(currentPlayerTurn)
+        currentPlayerTurn.setTurn(False)
+        playerAmt = len(self.players)
+        if self.isReverse:
+            nextTurn = currentTurn - 1
+        else:
+            if currentTurn >= playerAmt - 1:
+                nextTurn = 0
+            else:
+                nextTurn = currentTurn + 1
+        self.players[nextTurn].setTurn(True)
 
 
 def identifyPlayer(playerID: int) -> Player:
@@ -309,6 +328,7 @@ async def start(ctx):
                 player.drawCard()  # This will append 7 cards to each player currently in game
             await player.getMember().add_roles(player.getMember(), player.getRole())  # Appends role to player
 
+        game.players[0].setTurn(True)
         game.inLobby = False
         game.inGame = True
 
@@ -351,9 +371,17 @@ async def leave(ctx):
 async def play(ctx, cardNum):
     """Plays a card"""
     try:
-        userID = ctx.message.author.id
-        player = identifyPlayer(userID)
-        player.playCard(cardNum)
+        if game.inGame:
+            author = identifyPlayer(ctx.message.author.id)
+            if author.isTurn:
+                userID = ctx.message.author.id
+                player = identifyPlayer(userID)
+                await player.playCard(cardNum)
+                game.nextTurn()
+            else:
+                await mainChannel.send("Not your turn whore")
+        else:
+            await mainChannel.send("Wait until the game starts you fucker")
     except Exception as e:
         await runException(e)
 
