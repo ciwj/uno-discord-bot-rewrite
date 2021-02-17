@@ -328,7 +328,6 @@ async def join(ctx):
                 for j in range(7):
                     player.drawCard()
 
-
             await mainChannel.send(ctx.message.author.mention + " has joined the game!")
     except Exception as e:
         await runException(e)
