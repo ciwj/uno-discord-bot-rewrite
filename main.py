@@ -22,17 +22,9 @@ prefix = '!'
 
 bot = commands.Bot(command_prefix=prefix, description=description, case_insensitive=True)
 
+
 # TODO: Add help information for commands
 # TODO: Send go.png if a minute passes between commands of the current player
-# TODO: Only send draw.png once per turn
-
-# TODO change this to automatically get channels that are named properly
-channels = [
-    os.getenv('PLAYER_0_CHANNEL'), os.getenv('PLAYER_1_CHANNEL'), os.getenv('PLAYER_2_CHANNEL'),
-    os.getenv('PLAYER_3_CHANNEL'), os.getenv('PLAYER_4_CHANNEL'), os.getenv('PLAYER_5_CHANNEL'),
-    os.getenv('PLAYER_6_CHANNEL'), os.getenv('PLAYER_7_CHANNEL'),
-    os.getenv('PLAYER_8_CHANNEL'), os.getenv('PLAYER_9_CHANNEL')
-]
 
 
 async def runException(e: Exception):
@@ -51,7 +43,8 @@ class onlyInGameError(Error):
     """Raised when a player tries to do something only available in an inGame state"""
 
     def __init__(self, playerID: int, playerUsername: str):
-        self.message = "User {0} - {1} tried running a command only available in a game.".format(playerID, playerUsername)
+        self.message = "User {0} - {1} tried running a command only available in a game.".format(playerID,
+                                                                                                 playerUsername)
 
     @staticmethod
     async def send_msg():
