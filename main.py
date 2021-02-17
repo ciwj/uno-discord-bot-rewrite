@@ -43,6 +43,20 @@ class Error(Exception):
     pass
 
 
+class onlyInGameError(Error):
+    """Raised when a player tries to do something only available in an inGame state"""
+
+    def __init__(self, playerID: int, playerUsername: str):
+        self.message = "User {0} - {1} tried running a command only available in a game.".format(playerID, playerUsername)
+
+    @staticmethod
+    async def send_msg():
+        await mainChannel.send("This is only available in a game.")
+
+    def __str__(self):
+        return self.message
+
+
 class onlyInLobbyError(Error):
     """Raised when a player tries to do something only available in a lobby state"""
 
@@ -424,12 +438,18 @@ async def draw(ctx):
         await runException(e)
 
 
-# TODO add cardNum command
 @bot.command(pass_context=True)
-async def cardNum(ctx):
+async def numCards(ctx):
     """Shows the amount of cards each player has"""
     try:
-        pass
+        if game.inGame:
+            stringToPrint = "Each player has:\n"
+            for player in game.players:
+                cardNum = len(player.getHand())
+                stringToPrint += "{0.member.mention}: {1} cards\n".format(player, cardNum)
+            await mainChannel.send(stringToPrint)
+        else:
+            raise onlyInGameError(ctx.message.author.id, ctx.message.author.nick)
     except Exception as e:
         await runException(e)
 
