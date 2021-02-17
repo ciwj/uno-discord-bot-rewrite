@@ -3,6 +3,8 @@ import random
 import logging
 
 from datetime import datetime
+
+import discord
 from discord.utils import get
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -21,6 +23,8 @@ prefix = '!'
 bot = commands.Bot(command_prefix=prefix, description=description, case_insensitive=True)
 
 # TODO: Add help information for commands
+# TODO: Send go.png if a minute passes between commands of the current player
+# TODO: Only send draw.png once per turn
 
 # TODO change this to automatically get channels that are named properly
 channels = [
@@ -94,7 +98,7 @@ class alreadyJoinedError(Error):
 
     @staticmethod
     async def send_msg():
-        await mainChannel.send("You're already in the game, bastard. May your soul rot like the grape under my fridge.")
+        await mainChannel.send("Already in game!")
 
     def __str__(self):
         return self.message
@@ -188,6 +192,8 @@ class Player:
         self.hand = []
         self.member = member
         self.isTurn = False
+        self.drawTimes = 0
+        self.hasDrawnSent = False
 
     def drawCard(self):
         self.hand.append(game.deck.drawFromDeck())
@@ -199,7 +205,7 @@ class Player:
         if lastCard.getColour() == cardToPlay.getColour() or lastCard.getValue() == cardToPlay.getValue():
             game.deck.deckList.append(self.hand.pop(cardNo - 1))  # I think this works but not sure.
         else:
-            await mainChannel.send("Card not valid and neither are you.")
+            await mainChannel.send("Card not valid.")
 
     def showHand(self):
         for card in self.hand:
@@ -219,6 +225,12 @@ class Player:
 
     def getHand(self):
         return self.hand
+
+    def addDrawTime(self):
+        self.drawTimes += 1
+
+    def setHasDrawnSent(self, condition: bool):
+        self.hasDrawnSent = condition
 
 
 class Game:
@@ -279,7 +291,7 @@ class Game:
 
 def identifyPlayer(playerID: int) -> Player:
     for player in game.players:
-        if player.getID == playerID:
+        if player.getID() == playerID:
             return player
     print("No player with ID {} found.".format(playerID))
 
@@ -331,7 +343,7 @@ async def join(ctx):
             if player.getID() == ctx.message.author.id:
                 alreadyLeft = True
         if alreadyLeft:
-            await mainChannel.send("Begone bitch")
+            await mainChannel.send("Begone")
         else:
             member = await commands.MemberConverter().convert(ctx, str(ctx.message.author.id))
             newPlayer = Player(ctx.message.author.nick, ctx.message.author.id, member)
@@ -406,7 +418,7 @@ async def leave(ctx):
         await runException(e)
 
 
-# TODO Add play command, currently needs turn identifier
+# TODO Check that this works
 @bot.command(pass_context=True)
 async def play(ctx, cardNum):
     """Plays a card"""
@@ -414,26 +426,34 @@ async def play(ctx, cardNum):
         if game.inGame:
             author = identifyPlayer(ctx.message.author.id)
             if author.isTurn:
-                userID = ctx.message.author.id
-                player = identifyPlayer(userID)
+                player = identifyPlayer(ctx.message.author.id)
+                player.setHasDrawnSent(False)
                 await player.playCard(cardNum)
                 game.nextTurn()
             else:
-                await mainChannel.send("Not your turn whore")
+                await mainChannel.send("Not your turn :v(")
         else:
             await mainChannel.send("Wait until the game starts you fucker")
     except Exception as e:
         await runException(e)
 
 
-# TODO Add draw command
+# TODO Complete draw command
+# TODO Add functionality for checking if cards are playable in the Player/Deck class
 @bot.command(pass_context=True)
 async def draw(ctx):
     """Draws a card for a player"""
     try:
-        player = identifyPlayer(ctx.message.author.id)  # broke
-        player.drawCard()
-        await printCards(player)
+        if game.inGame:
+            player = identifyPlayer(ctx.message.author.id)
+            player.addDrawTime()
+            if player.drawTimes >= 3 and not player.hasDrawnSent:
+                await mainChannel.send(file=discord.File('draw.png'))
+                player.setHasDrawnSent(True)
+            player.drawCard()
+            await printCards(player)
+        else:
+            raise onlyInGameError(ctx.message.author.id, ctx.message.author.nick)
     except Exception as e:
         await runException(e)
 
