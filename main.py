@@ -164,9 +164,11 @@ class Deck:
         random.seed(datetime.now())
         random.shuffle(self.deckList)  # Should work, double-check
 
-    # TODO empty most of playing pile when deck is empty
     def drawFromDeck(self) -> Card:
         if len(self.deckList) == 0:
+            # This *should* remove everything except the last 9 cards from the playing pile
+            for i in range(len(self.playingPile) - 10):
+                self.playingPile.pop(0)
             self.constructDeck()
             self.shuffleDeck()
         drawnCard = self.deckList.pop()
@@ -197,6 +199,7 @@ class Player:
         cardToPlay = self.hand[cardNo]
         if lastCard.getColour() == cardToPlay.getColour() or lastCard.getValue() == cardToPlay.getValue():
             game.deck.deckList.append(self.hand.pop(cardNo - 1))  # I think this works but not sure.
+            game.nextTurn()
         else:
             await mainChannel.send("Card not valid.")
 
@@ -292,8 +295,10 @@ def identifyPlayer(playerID: int) -> Player:
 async def printCards(player: Player):
     playerRoles = player.getMember().roles
     for role in playerRoles:
-        if "Player" in role.name:
+        print(role.name)
+        if "Player " in role.name:
             playerRole = role
+    print(playerRole)
     channelNum = playerRole.name[-1]
     channel = get(guild.text_channels, name="player-" + channelNum)
     await channel.purge(limit=50)
@@ -362,13 +367,16 @@ async def start(ctx):
         print("User {0} - {1} started the game".format(ctx.message.author.id, ctx.message.author.nick))
         await mainChannel.send("Starting game!")
 
+        # TODO fix this piece of shit code that won't see your player role
         """Dealing cards & giving roles"""
         for player in game.players:
             roleName = "Player " + str(game.players.index(player) + 1)
+            print(roleName)
             role = get(ctx.guild.roles, name=roleName)
             for j in range(7):
                 player.drawCard()  # Append 7 cards to each player currently in game
             await player.getMember().add_roles(role)  # Appends role to player
+        for player in game.players:
             await printCards(player)
 
         game.deck.addToPile(game.deck.drawFromDeck())
@@ -422,7 +430,6 @@ async def play(ctx, cardNum):
                 player = identifyPlayer(ctx.message.author.id)
                 player.setHasDrawnSent(False)
                 await player.playCard(cardNum)
-                game.nextTurn()
             else:
                 await mainChannel.send("Not your turn :v(")
         else:
