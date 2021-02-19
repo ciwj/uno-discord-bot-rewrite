@@ -473,6 +473,18 @@ async def numCards(ctx):
     except Exception as e:
         await runException(e)
 
+@bot.command(pass_context=True)
+async def showDeckList(ctx):
+    """will print the decklist so we know we're doing stuff right lol"""
+    try:
+        if game.inGame:
+            stringToPrint = "**current decklist**\n"
+            for card in deckList:
+                stringToPrint = "str(card)\n"
+            await channel.send(stringToPrint)
+        pass
+    except Exception as e:
+        await runException(e)
 
 # TODO add stopGame command
 @bot.command(pass_context=True)
