@@ -393,7 +393,7 @@ async def start(ctx):
 async def listPlayers(ctx):
     """Lists players currently in the game."""
     try:
-        print("User {0} - {1} has listed all players".format(ctx.message.author.id, ctx.message.author.nick))
+        print("User {0.id} - {0.nick} has listed all players".format(ctx.message.author))
         strToPrint = "Players:\n"
         for player in game.players:
             strToPrint += player.member.mention + "\n"
