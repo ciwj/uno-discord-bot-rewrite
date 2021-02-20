@@ -478,11 +478,12 @@ async def showDeckList(ctx):
     """will print the decklist so we know we're doing stuff right lol"""
     try:
         if game.inGame:
-            stringToPrint = "**current decklist**\n"
-            for card in deckList:
-                stringToPrint = "str(card)\n"
-            await channel.send(stringToPrint)
-        pass
+            stringToPrint = "**Current Decklist**\n"
+            for card in game.deck.deckList:
+                stringToPrint = str(card) + "\n"
+            await mainChannel.send(stringToPrint)
+        else:
+            await mainChannel.send("Gotta be in game homie")
     except Exception as e:
         await runException(e)
 
