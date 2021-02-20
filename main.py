@@ -473,6 +473,8 @@ async def numCards(ctx):
     except Exception as e:
         await runException(e)
 
+
+# TODO comment this mf
 @bot.command(pass_context=True)
 async def showDeckList(ctx):
     """will print the decklist so we know we're doing stuff right lol"""
@@ -483,6 +485,7 @@ async def showDeckList(ctx):
                 stringToPrint += str(card) + "\n"
             await mainChannel.send(stringToPrint)
         else:
+            print("User {0.id} - {0.nick} has listed all cards in the deck".format(ctx.message.author))
             await mainChannel.send("Gotta be in game homie")
     except Exception as e:
         await runException(e)
