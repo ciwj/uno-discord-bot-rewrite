@@ -480,7 +480,7 @@ async def showDeckList(ctx):
         if game.inGame:
             stringToPrint = "**Current Decklist**\n"
             for card in game.deck.deckList:
-                stringToPrint = str(card) + "\n"
+                stringToPrint += str(card) + "\n"
             await mainChannel.send(stringToPrint)
         else:
             await mainChannel.send("Gotta be in game homie")
