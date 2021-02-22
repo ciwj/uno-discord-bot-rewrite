@@ -156,10 +156,6 @@ class Deck:
         print("Last card played: " + str(lastCard))
         return lastCard
 
-    def showDeck(self):
-        for card in self.deckList:
-            print(card)
-
     def shuffleDeck(self):
         random.seed(datetime.now())
         random.shuffle(self.deckList)  # Should work, double-check
@@ -202,10 +198,6 @@ class Player:
             game.nextTurn()
         else:
             await mainChannel.send("Card not valid.")
-
-    def showHand(self):
-        for card in self.hand:
-            print(card)
 
     def getID(self):
         return self.playerID
